@@ -1,0 +1,2 @@
+serviceClass: com.application.datastore.client.GreetingService
+path: 6C588EDEAF5FCE2945ABE5904AB29AC6.gwt.rpc

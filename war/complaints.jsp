@@ -1,0 +1,154 @@
+<%@ page import="com.google.appengine.api.blobstore.BlobstoreServiceFactory" %>
+<%@ page import="com.google.appengine.api.blobstore.BlobstoreService" %>
+<%@ page import="com.google.appengine.api.blobstore.BlobKey" %>
+
+
+
+<%
+    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" type="text/css" href="default.css" media="screen" />
+         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <title>FileAPI nad XHR 2 ajax uploading</title>
+        <style>
+        	input[type=submit], input.submit {
+font-weight: bold;
+width: auto !important;
+float: right;
+}
+
+input, select, textarea {
+border: 1px solid #ccc;
+padding: 9px 8px 7px;
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+-ms-box-sizing: border-box;
+box-sizing: border-box;
+-webkit-border-radius: 3px;
+border-radius: 3px;
+-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.05);
+-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.05);
+box-shadow: inset 0 1px 1px rgba(0,0,0,0.05);
+}
+.button:hover {
+background: #04608E;
+background: -moz-linear-gradient(top, #69a0b6 0, #69a0b6 1px, #277696 1px, #04608e 100%);
+background: -o-linear-gradient(top, #69a0b6 0, #69a0b6 1px, #277696 1px, #04608e 100%);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #69a0b6), color-stop(5%, #69a0b6), color-stop(5%, #277696), color-stop(100%, #04608e));
+background: linear-gradient(top, #69a0b6 0%,#69a0b6 1px,#277696 1px,#04608e 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#277696', endColorstr='#04608E',GradientType=0 );
+border-color: #004a73;
+margin-left:5px;
+}
+.button{
+background: #0571A6;
+background: -moz-linear-gradient(top, #73aec9 0, #73aec9 1px, #338ab0 1px, #0571a6 100%);
+background: -o-linear-gradient(top, #73aec9 0, #73aec9 1px, #338ab0 1px, #0571a6 100%);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0, #73aec9), color-stop(5%, #73aec9), color-stop(5%, #338ab0), color-stop(100%, #0571a6));
+background: linear-gradient(top, #73aec9 0%,#73aec9 1px,#338ab0 1px,#0571a6 100%);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#338AB0', endColorstr='#0571A6',GradientType=0 );
+border-color: #045a8b;
+color: #fff !important;
+border-width: 1px;
+border-style: solid;
+-moz-border-radius: 3px;
+-webkit-border-radius: 3px;
+border-radius: 3px;
+cursor: pointer;
+font-size: 12px;
+line-height: 1.35;
+margin-top: 0;
+overflow: visible;
+padding: 3px 10px 2px;
+text-decoration: none !important;
+vertical-align: top;
+width: auto;
+margin-left:5px;
+}
+#files{
+	margin:auto;
+}
+#files{
+
+	border-radius:5px;
+}
+        </style>
+    </head>
+    <body>
+        <div id="wrap">
+
+           
+            <h2 class="header">Complaint Box</h2>
+            <div id="files" style="margin-top:-1px;border-top:none;border-top-left-radius:0px;;border-top-right-radius:0px">
+            		
+	            <form action="<%= blobstoreService.createUploadUrl("/complaints") %>" method="post" enctype="multipart/form-data">
+	            	<input type="hidden" id="user" name="user" />
+	                <input type="file" capture="camera" id="fileField" name="fileField" multiple />              
+                	<ul style="min-height:100px;border:none" id="fileList"></ul>
+	                <h2 style="border:none">Complaint Text</h2>
+	                <textarea style="width:100%;" name="complaintBoxText"></textarea>
+	                <h2 style="border:none">Address : </h2>
+	                <textarea style="width:100%;" name="complaintBoxAddress"></textarea>
+	                <input type="submit" value="Done" id="done" style="display:none"/>	                
+                	<p id="status"></p>
+               	 	<p id="percent"></p>
+               
+	            </form>
+            
+                <a class="button"  id="upload" href="#" title="Upload all files in list">Upload files</a>
+                <a class="button" id="reset" href="#" title="Remove all files from list">Clear list</a>
+            </div>
+
+            
+        </div>
+       
+    </body>
+
+<script type="text/javascript" src="jquery.tools.min.js"></script>
+<script type="text/javascript" src="jquery.form.js"></script>
+  <script type="text/javascript" src="FileAPI.js"></script>
+<script>
+(function() {
+    
+var bar = $('.bar');
+var percent = $('#percent');
+var status = $('#status');
+   
+$('form').ajaxForm({
+    beforeSend: function() {
+        status.empty();
+        var percentVal = '0%';
+        //bar.width(percentVal);
+        percent.html(percentVal);
+        $("#upload").css("display","none");
+        
+    },
+    uploadProgress: function(event, position, total, percentComplete) {
+        var percentVal = percentComplete + '%';
+        bar.width(percentVal)
+        percent.html(percentVal);
+		//console.log(percentVal, position, total);
+    },
+	complete: function(xhr) {
+		status.html(xhr.responseText);
+		
+		$("#upload").css("display","block");
+		
+	}
+}); 
+
+})();   
+
+function uploadFile(file){
+	
+	document.getElementById("done").click();	
+	
+	
+}
+</script>
+    
+</html>

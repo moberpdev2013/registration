@@ -1,0 +1,3 @@
+# Module registration
+# RPC service class, partial path of RPC policy file
+com.application.datastore.client.GreetingService, 6C588EDEAF5FCE2945ABE5904AB29AC6.gwt.rpc
